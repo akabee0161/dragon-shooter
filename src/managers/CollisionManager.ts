@@ -20,7 +20,11 @@ export interface PlayerHitEvent {
 const ENEMY_COLORS: Record<string, number> = {
   enemy_red: 0xff4444,
   enemy_green: 0x44ff44,
+  enemy_blue: 0x4488ff,
+  enemy_purple: 0xaa44ff,
   boss: 0x8833cc,
+  boss_stage2: 0xcc2222,
+  boss_stage3: 0x22aa66,
 };
 
 export interface CollisionResult {

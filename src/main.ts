@@ -2,7 +2,6 @@ import { Game } from "./core/Game";
 import { AssetLoader } from "./core/AssetLoader";
 import { Background } from "./core/Background";
 import { Player } from "./entities/Player";
-import { Boss } from "./entities/Boss";
 import { InputManager } from "./managers/InputManager";
 import { LevelManager } from "./managers/LevelManager";
 import { CollisionManager } from "./managers/CollisionManager";
@@ -10,6 +9,9 @@ import { EffectManager } from "./managers/EffectManager";
 import { AudioManager } from "./managers/AudioManager";
 import { GameUI } from "./ui/GameUI";
 import { TitleScene } from "./scenes/TitleScene";
+
+/** ステージファイル一覧（順番に進行） */
+const STAGE_FILES = ["stage1.json", "stage2.json", "stage3.json"];
 
 async function main() {
   // ゲーム初期化
@@ -19,8 +21,16 @@ async function main() {
   // プレースホルダーテクスチャ生成
   AssetLoader.generateTextures(game.app);
 
-  // ステージデータ読み込み
-  const stageData = await AssetLoader.loadStage(`${import.meta.env.BASE_URL}assets/levels/stage1.json`);
+  // 最初のステージデータ読み込み
+  const stageData = await AssetLoader.loadStage(
+    `${import.meta.env.BASE_URL}assets/levels/${STAGE_FILES[0]}`,
+  );
+
+  // 現在のステージインデックス
+  let currentStageIndex = 0;
+
+  // ボスの最大HP（ステージごとに変わる）
+  let currentBossMaxHP = 50;
 
   // --- タイトル画面 ---
   const titleScene = new TitleScene();
@@ -55,31 +65,56 @@ async function main() {
 
   // ボス出現時のコールバック
   levelManager.onBossSpawn = () => {
+    if (levelManager.boss) {
+      currentBossMaxHP = levelManager.boss.hp;
+    }
     gameUI.showBossBar();
   };
 
   // ボス撃破時のコールバック
   levelManager.onBossDefeat = () => {
     gameUI.hideBossBar();
-    gameUI.addScore(3000);
-    effectManager.spawnExplosion(0.5, 0.15, 0x8833cc);
+    const bossColor = currentBossMaxHP >= 80 ? 0xcc2222 : 0x8833cc;
+    effectManager.spawnExplosion(0.5, 0.15, bossColor);
     effectManager.spawnExplosion(0.45, 0.18, 0xff4444);
     effectManager.spawnExplosion(0.55, 0.12, 0xffaa00);
     AudioManager.current.playSE("explosion");
     game.shake(20, 1.0);
 
-    // 少し待ってからクリア画面
-    setTimeout(() => {
-      game.state = "gameclear";
-      gameUI.showGameClear();
-    }, 500);
+    const nextStageIndex = currentStageIndex + 1;
+
+    if (nextStageIndex < STAGE_FILES.length) {
+      // 次のステージへ遷移
+      setTimeout(async () => {
+        game.state = "loading";
+        const nextStageData = await AssetLoader.loadStage(
+          `${import.meta.env.BASE_URL}assets/levels/${STAGE_FILES[nextStageIndex]}`,
+        );
+        currentStageIndex = nextStageIndex;
+        levelManager.loadStage(nextStageData);
+
+        // プレイヤーの弾だけクリア、HPとスコアは引き継ぐ
+        player.clearBullets();
+        player.reset();
+        effectManager.reset();
+        game.state = "playing";
+        gameUI.showStageTitle(`STAGE ${nextStageIndex + 1}`);
+      }, 1500);
+    } else {
+      // 全ステージクリア
+      setTimeout(() => {
+        game.state = "gameclear";
+        gameUI.showGameClear();
+      }, 500);
+    }
   };
 
-  // リトライ処理
+  // リトライ処理（ステージ1からやり直し）
   const resetGame = () => {
+    currentStageIndex = 0;
     player.clearBullets();
     player.reset();
-    levelManager.reset();
+    levelManager.loadStage(stageData); // stage1に戻す
     effectManager.reset();
     gameUI.resetScore();
     gameUI.hideGameOver();
@@ -89,12 +124,13 @@ async function main() {
   };
   gameUI.setOnRetry(resetGame);
 
-  // タイトル → ゲーム開始
+  // タイトル → ゲーム開始（常にステージ1から）
   titleScene.setOnStart(() => {
     titleScene.hide();
     game.gameContainer.visible = true;
     gameUI.setVisible(true);
     resetGame();
+    gameUI.showStageTitle("STAGE 1");
   });
 
   // ゲームループ
@@ -117,23 +153,23 @@ async function main() {
     player.update(delta);
     levelManager.update(delta);
 
-    // ボスの更新（敵弾発射含む）
+    // ボスとシューター敵の更新（敵弾発射含む）
     levelManager.updateBoss(delta, player.x, player.y);
 
     // ボスHPバー更新
     if (levelManager.boss) {
-      gameUI.updateBossBar(levelManager.boss.hp / Boss.MAX_HP);
+      gameUI.updateBossBar(levelManager.boss.hp / currentBossMaxHP);
     }
 
-    // 敵弾の収集（ボスが存在する場合）
-    const enemyBullets = levelManager.boss?.enemyBullets;
+    // 全敵弾の収集（ボス＋シューター敵）
+    const enemyBullets = levelManager.getAllEnemyBullets();
 
     // 当たり判定
     const result = CollisionManager.check(
       player.bullets,
       levelManager.activeEnemies,
       player,
-      enemyBullets,
+      enemyBullets.length > 0 ? enemyBullets : undefined,
     );
 
     // 敵撃破イベント
