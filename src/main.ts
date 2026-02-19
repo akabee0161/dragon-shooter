@@ -20,7 +20,7 @@ async function main() {
   AssetLoader.generateTextures(game.app);
 
   // ステージデータ読み込み
-  const stageData = await AssetLoader.loadStage(`${import.meta.env.BASE_URL}src/assets/levels/stage1.json`);
+  const stageData = await AssetLoader.loadStage(`${import.meta.env.BASE_URL}assets/levels/stage1.json`);
 
   // --- タイトル画面 ---
   const titleScene = new TitleScene();
