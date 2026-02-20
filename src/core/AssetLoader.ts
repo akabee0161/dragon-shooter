@@ -19,8 +19,12 @@ export const TEX = {
   BULLET: "bullet",
   ENEMY_RED: "enemy_red",
   ENEMY_GREEN: "enemy_green",
+  ENEMY_BLUE: "enemy_blue",
+  ENEMY_PURPLE: "enemy_purple",
   ENEMY_BULLET: "enemy_bullet",
   BOSS: "boss",
+  BOSS_STAGE2: "boss_stage2",
+  BOSS_STAGE3: "boss_stage3",
   BG: "bg",
 } as const;
 
@@ -72,6 +76,26 @@ export class AssetLoader {
     green.circle(26, 17, 1.5).fill(0x002200);
     AssetLoader.cacheFromGraphics(app, TEX.ENEMY_GREEN, green, 40, 40);
 
+    // 敵(青) 36x36 ダイヤモンド型 + 目（弾を撃つ敵）
+    const blue = new Graphics();
+    blue.poly([18, 2, 2, 20, 18, 34, 34, 20]).fill(0x4488ff);
+    blue.poly([18, 6, 8, 20, 18, 30, 28, 20]).fill(0x3366dd);
+    blue.circle(13, 17, 3).fill(0xffffff);
+    blue.circle(23, 17, 3).fill(0xffffff);
+    blue.circle(13, 18, 1.5).fill(0x000044);
+    blue.circle(23, 18, 1.5).fill(0x000044);
+    AssetLoader.cacheFromGraphics(app, TEX.ENEMY_BLUE, blue, 36, 36);
+
+    // 敵(紫) 30x30 矢印型（体当たり敵）
+    const purple = new Graphics();
+    purple.poly([15, 0, 0, 28, 8, 20, 15, 30, 22, 20, 30, 28]).fill(0xaa44ff);
+    purple.poly([15, 4, 6, 24, 15, 26, 24, 24]).fill(0x8822dd);
+    purple.circle(11, 14, 2.5).fill(0xffccff);
+    purple.circle(19, 14, 2.5).fill(0xffccff);
+    purple.circle(11, 15, 1.2).fill(0x220022);
+    purple.circle(19, 15, 1.2).fill(0x220022);
+    AssetLoader.cacheFromGraphics(app, TEX.ENEMY_PURPLE, purple, 30, 30);
+
     // 敵弾 12x12 (オレンジの丸)
     const eBullet = new Graphics();
     eBullet.circle(6, 6, 5).fill(0xff8800);
@@ -99,6 +123,50 @@ export class AssetLoader {
     boss.circle(60, 35, 6).fill(0xff4444);
     boss.circle(60, 36, 3).fill(0xffff00);
     AssetLoader.cacheFromGraphics(app, TEX.BOSS, boss, 96, 96);
+
+    // ボス(ステージ2) 96x96 (巨大な紅ドラゴン)
+    const boss2 = new Graphics();
+    // 体
+    boss2.poly([48, 4, 8, 80, 88, 80]).fill(0xcc2222);
+    // 翼（左）
+    boss2.poly([8, 50, -20, 70, 24, 60]).fill(0xaa1111);
+    // 翼（右）
+    boss2.poly([88, 50, 116, 70, 72, 60]).fill(0xaa1111);
+    // 腹部
+    boss2.poly([48, 20, 28, 75, 68, 75]).fill(0xdd5544);
+    // 角（左）
+    boss2.poly([30, 15, 20, -5, 38, 10]).fill(0xddaa00);
+    // 角（右）
+    boss2.poly([66, 15, 76, -5, 58, 10]).fill(0xddaa00);
+    // 目（左）
+    boss2.circle(36, 35, 6).fill(0xffff00);
+    boss2.circle(36, 36, 3).fill(0xff0000);
+    // 目（右）
+    boss2.circle(60, 35, 6).fill(0xffff00);
+    boss2.circle(60, 36, 3).fill(0xff0000);
+    AssetLoader.cacheFromGraphics(app, TEX.BOSS_STAGE2, boss2, 96, 96);
+
+    // ボス(ステージ3) 96x96 (巨大な翠ドラゴン)
+    const boss3 = new Graphics();
+    // 体
+    boss3.poly([48, 4, 8, 80, 88, 80]).fill(0x22aa66);
+    // 翼（左）
+    boss3.poly([8, 50, -20, 70, 24, 60]).fill(0x118844);
+    // 翼（右）
+    boss3.poly([88, 50, 116, 70, 72, 60]).fill(0x118844);
+    // 腹部
+    boss3.poly([48, 20, 28, 75, 68, 75]).fill(0x44cc88);
+    // 角（左）
+    boss3.poly([30, 15, 20, -5, 38, 10]).fill(0xccddff);
+    // 角（右）
+    boss3.poly([66, 15, 76, -5, 58, 10]).fill(0xccddff);
+    // 目（左）
+    boss3.circle(36, 35, 6).fill(0x00ffff);
+    boss3.circle(36, 36, 3).fill(0x004444);
+    // 目（右）
+    boss3.circle(60, 35, 6).fill(0x00ffff);
+    boss3.circle(60, 36, 3).fill(0x004444);
+    AssetLoader.cacheFromGraphics(app, TEX.BOSS_STAGE3, boss3, 96, 96);
 
     // 背景タイル 64x128 (星空)
     const bg = new Graphics();

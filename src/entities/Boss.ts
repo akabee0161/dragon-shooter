@@ -10,8 +10,11 @@ import { Game } from "../core/Game";
 export class Boss extends Enemy {
   static readonly MAX_HP = 50;
 
-  /** 発射間隔（秒） */
-  private fireCooldown = 1.0;
+  /** 発射間隔（秒）— EnemyFactoryから設定可能 */
+  fireCooldown = 1.0;
+  /** 扇状弾のWay数 — EnemyFactoryから設定可能 */
+  fanWays = 3;
+
   private fireTimer = 0;
   /** 発射パターンのカウンター */
   private shotCount = 0;
@@ -35,7 +38,7 @@ export class Boss extends Enemy {
         b.vx = 0;
         b.vy = 0;
       },
-      30,
+      50,
     );
   }
 
@@ -44,9 +47,10 @@ export class Boss extends Enemy {
     this.shotCount++;
 
     if (this.shotCount % 3 === 0) {
-      // 3-Way 扇状弾
-      const angles = [-0.3, 0, 0.3];
-      for (const offset of angles) {
+      // N-Way 扇状弾
+      const spread = 0.3 * (this.fanWays - 1) / 2;
+      for (let i = 0; i < this.fanWays; i++) {
+        const offset = -spread + (0.3 * i);
         this.fireBullet(playerX, playerY, offset);
       }
     } else {

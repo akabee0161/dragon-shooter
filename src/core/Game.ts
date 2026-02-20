@@ -1,6 +1,6 @@
 import { Application, Container } from "pixi.js";
 
-export type GameState = "playing" | "gameover" | "gameclear";
+export type GameState = "playing" | "gameover" | "gameclear" | "loading";
 
 export class Game {
   app: Application;

@@ -1,0 +1,27 @@
+{
+  "id": "stage_2",
+  "waves": [
+    { "time": 2.0, "type": "enemy_red", "x": 0.2, "y": -0.1, "speed": 0.5 },
+    { "time": 2.0, "type": "enemy_red", "x": 0.8, "y": -0.1, "speed": 0.5 },
+    { "time": 2.5, "type": "enemy_red", "x": 0.5, "y": -0.1, "speed": 0.55 },
+    { "time": 3.5, "type": "enemy_green", "x": 0.7, "y": -0.1, "speed": 0.35 },
+    { "time": 4.0, "type": "enemy_green", "x": 0.3, "y": -0.1, "speed": 0.35 },
+    { "time": 5.0, "type": "enemy_blue", "x": 0.5, "y": -0.1, "speed": 0.25 },
+    { "time": 6.0, "type": "enemy_red", "x": 0.2, "y": -0.1, "speed": 0.6 },
+    { "time": 6.0, "type": "enemy_red", "x": 0.5, "y": -0.1, "speed": 0.6 },
+    { "time": 6.0, "type": "enemy_red", "x": 0.8, "y": -0.1, "speed": 0.6 },
+    { "time": 7.5, "type": "enemy_blue", "x": 0.3, "y": -0.1, "speed": 0.2 },
+    { "time": 7.5, "type": "enemy_blue", "x": 0.7, "y": -0.1, "speed": 0.2 },
+    { "time": 9.0, "type": "enemy_green", "x": 0.2, "y": -0.1, "speed": 0.4 },
+    { "time": 9.0, "type": "enemy_green", "x": 0.8, "y": -0.1, "speed": 0.4 },
+    { "time": 9.5, "type": "enemy_green", "x": 0.5, "y": -0.1, "speed": 0.4 },
+    { "time": 10.5, "type": "enemy_blue", "x": 0.5, "y": -0.1, "speed": 0.22 },
+    { "time": 11.0, "type": "enemy_red", "x": 0.15, "y": -0.1, "speed": 0.65 },
+    { "time": 11.0, "type": "enemy_red", "x": 0.85, "y": -0.1, "speed": 0.65 },
+    { "time": 12.0, "type": "enemy_blue", "x": 0.3, "y": -0.1, "speed": 0.2 },
+    { "time": 12.0, "type": "enemy_blue", "x": 0.7, "y": -0.1, "speed": 0.2 },
+    { "time": 13.0, "type": "enemy_green", "x": 0.4, "y": -0.1, "speed": 0.45 },
+    { "time": 13.0, "type": "enemy_green", "x": 0.6, "y": -0.1, "speed": 0.45 },
+    { "time": 18.0, "type": "boss_stage2", "x": 0.5, "y": -0.15, "speed": 0.15 }
+  ]
+}

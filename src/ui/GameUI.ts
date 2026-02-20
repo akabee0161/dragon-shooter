@@ -313,6 +313,52 @@ export class GameUI {
     this.overlay.visible = false;
   }
 
+  /** ステージ名を画面中央に表示し、フェードアウトする */
+  showStageTitle(label: string): void {
+    const game = Game.current;
+
+    const stageText = new Text({
+      text: label,
+      style: {
+        fontFamily: "monospace",
+        fontSize: 48,
+        fill: 0xffffff,
+        fontWeight: "bold",
+        dropShadow: {
+          alpha: 0.8,
+          angle: Math.PI / 4,
+          blur: 4,
+          distance: 3,
+          color: 0x000000,
+        },
+      },
+    });
+    stageText.anchor.set(0.5);
+    stageText.x = game.width / 2;
+    stageText.y = game.height / 2;
+    this.stage.addChild(stageText);
+
+    // フェードアウトアニメーション
+    let elapsed = 0;
+    const onTick = (ticker: { deltaTime: number }) => {
+      const delta = ticker.deltaTime / 60;
+      elapsed += delta;
+
+      if (elapsed < 1.5) {
+        // 最初の1.5秒は表示
+        stageText.alpha = 1;
+      } else if (elapsed < 2.5) {
+        // 次の1秒でフェードアウト
+        stageText.alpha = 1 - (elapsed - 1.5);
+      } else {
+        // 完了 → 除去
+        this.stage.removeChild(stageText);
+        game.app.ticker.remove(onTick);
+      }
+    };
+    game.app.ticker.add(onTick);
+  }
+
   /** スコア・HPテキスト含むUIの表示/非表示 */
   setVisible(visible: boolean): void {
     this.scoreText.visible = visible;
