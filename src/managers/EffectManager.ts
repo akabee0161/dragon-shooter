@@ -77,6 +77,19 @@ export class EffectManager {
     }
   }
 
+  /** ボム使用時に画面各所で爆発を生成 */
+  spawnBombExplosions(): void {
+    const positions = [
+      [0.15, 0.2], [0.5, 0.15], [0.85, 0.2],
+      [0.25, 0.45], [0.75, 0.45],
+      [0.15, 0.7], [0.5, 0.65], [0.85, 0.7],
+      [0.35, 0.35], [0.65, 0.35],
+    ];
+    for (const [x, y] of positions) {
+      this.spawnExplosion(x, y, 0xff4400);
+    }
+  }
+
   /** 全パーティクルをプールに返却 */
   reset(): void {
     for (const p of this.activeParticles) {

@@ -7,8 +7,10 @@ import { AudioManager } from "../managers/AudioManager";
 
 export class Player extends Entity {
   static readonly MAX_HP = 3;
+  static readonly MAX_BOMBS = 3;
 
   hp = Player.MAX_HP;
+  bombs = Player.MAX_BOMBS;
 
   /** 発射間隔（秒） */
   private fireCooldown = 0.2;
@@ -62,11 +64,24 @@ export class Player extends Entity {
     return false;
   }
 
+  /** ボムを1つ使用する。残数0なら false を返す */
+  useBomb(): boolean {
+    if (this.bombs <= 0) return false;
+    this.bombs--;
+    return true;
+  }
+
   /** ゲームリセット時に呼ぶ */
   reset(): void {
+    this.hp = Player.MAX_HP;
+    this.bombs = Player.MAX_BOMBS;
+    this.resetPosition();
+  }
+
+  /** ステージ遷移時に呼ぶ（HPは引き継ぐ） */
+  resetPosition(): void {
     this.x = 0.5;
     this.y = 0.85;
-    this.hp = Player.MAX_HP;
     this.active = true;
     this.isInvincible = false;
     this.invincibleTimer = 0;

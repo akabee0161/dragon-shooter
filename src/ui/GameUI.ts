@@ -1,8 +1,8 @@
 import { Container, Graphics, Text } from "pixi.js";
 import { Game } from "../core/Game";
+import { Player } from "../entities/Player";
 
 export class GameUI {
-  private stage: Container;
   private scoreText: Text;
   private hpText: Text;
   private score = 0;
@@ -11,6 +11,15 @@ export class GameUI {
   private overlay: Container;
   private onRetry: (() => void) | null = null;
 
+  /** ボムボタン */
+  private bombBtn: Graphics;
+  private bombBtnText: Text;
+  private onBomb: (() => void) | null = null;
+
+  /** ボム赤フラッシュ */
+  private bombFlash: Graphics;
+  private bombFlashAlpha = 0;
+
   /** Boss HP Bar */
   private bossBarContainer: Container;
   private bossBarBg: Graphics;
@@ -18,8 +27,6 @@ export class GameUI {
   private bossBarWidth = 0;
 
   constructor(stage: Container) {
-    this.stage = stage;
-
     // スコア表示（左上）
     this.scoreText = new Text({
       text: "SCORE: 0",
@@ -40,12 +47,12 @@ export class GameUI {
     this.scoreText.y = 10;
     stage.addChild(this.scoreText);
 
-    // HP表示（右上）
+    // HP表示（左下）
     this.hpText = new Text({
       text: "",
       style: {
         fontFamily: "monospace",
-        fontSize: 24,
+        fontSize: 28,
         fill: 0xff6666,
         dropShadow: {
           alpha: 0.8,
@@ -56,7 +63,7 @@ export class GameUI {
         },
       },
     });
-    this.hpText.anchor.set(1, 0);
+    this.hpText.anchor.set(0, 1);
     stage.addChild(this.hpText);
 
     // Boss HP Bar（非表示で初期化）
@@ -72,6 +79,50 @@ export class GameUI {
     this.overlay = new Container();
     this.overlay.visible = false;
     stage.addChild(this.overlay);
+
+    // ボムボタン（右下、セーフエリアを考慮）
+    const game = Game.current;
+    const btnW = 120;
+    const btnH = 50;
+    const btnX = game.width - btnW - 15;
+    const btnY = game.height - btnH - 55;
+
+    this.bombBtn = new Graphics();
+    this.bombBtn.roundRect(btnX, btnY, btnW, btnH, 10).fill(0xff4400);
+    this.bombBtn.roundRect(btnX, btnY, btnW, btnH, 10).stroke({ color: 0xff8800, width: 2 });
+    this.bombBtn.eventMode = "static";
+    this.bombBtn.cursor = "pointer";
+    this.bombBtn.on("pointerdown", () => {
+      if (this.onBomb) this.onBomb();
+    });
+    stage.addChild(this.bombBtn);
+
+    this.bombBtnText = new Text({
+      text: `BOMB ×${Player.MAX_BOMBS}`,
+      style: {
+        fontFamily: "monospace",
+        fontSize: 18,
+        fill: 0xffffff,
+        fontWeight: "bold",
+        dropShadow: {
+          alpha: 0.8,
+          angle: Math.PI / 4,
+          blur: 2,
+          distance: 2,
+          color: 0x000000,
+        },
+      },
+    });
+    this.bombBtnText.anchor.set(0.5);
+    this.bombBtnText.x = btnX + btnW / 2;
+    this.bombBtnText.y = btnY + btnH / 2;
+    stage.addChild(this.bombBtnText);
+
+    // ボム赤フラッシュ（最前面）
+    this.bombFlash = new Graphics();
+    this.bombFlash.rect(0, 0, game.width, game.height).fill({ color: 0xff2200, alpha: 1 });
+    this.bombFlash.alpha = 0;
+    stage.addChild(this.bombFlash);
   }
 
   addScore(amount: number): void {
@@ -83,8 +134,8 @@ export class GameUI {
     const hearts = "\u2764 ".repeat(hp).trim();
     this.hpText.text = hearts || "---";
     const game = Game.current;
-    this.hpText.x = game.width - 10;
-    this.hpText.y = 10;
+    this.hpText.x = 15;
+    this.hpText.y = game.height - 55;
   }
 
   get currentScore(): number {
@@ -94,6 +145,36 @@ export class GameUI {
   /** リトライコールバックを登録 */
   setOnRetry(callback: () => void): void {
     this.onRetry = callback;
+  }
+
+  /** ボムコールバックを登録 */
+  setOnBomb(callback: () => void): void {
+    this.onBomb = callback;
+  }
+
+  /** ボム残数を更新 */
+  updateBombs(count: number): void {
+    this.bombBtnText.text = `BOMB ×${count}`;
+    if (count <= 0) {
+      this.bombBtn.tint = 0x888888;
+    } else {
+      this.bombBtn.tint = 0xffffff;
+    }
+  }
+
+  /** ボム赤フラッシュを開始 */
+  showBombFlash(): void {
+    this.bombFlashAlpha = 0.85;
+    this.bombFlash.alpha = this.bombFlashAlpha;
+  }
+
+  /** フレームごとに呼ぶ（フラッシュフェードアウト） */
+  update(delta: number): void {
+    if (this.bombFlashAlpha > 0) {
+      this.bombFlashAlpha -= delta * 1.2;
+      if (this.bombFlashAlpha < 0) this.bombFlashAlpha = 0;
+      this.bombFlash.alpha = this.bombFlashAlpha;
+    }
   }
 
   // --- Boss HP Bar ---
@@ -236,6 +317,8 @@ export class GameUI {
   setVisible(visible: boolean): void {
     this.scoreText.visible = visible;
     this.hpText.visible = visible;
+    this.bombBtn.visible = visible;
+    this.bombBtnText.visible = visible;
     if (!visible) {
       this.overlay.visible = false;
       this.bossBarContainer.visible = false;

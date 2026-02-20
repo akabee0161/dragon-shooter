@@ -20,7 +20,11 @@ async function main() {
   AssetLoader.generateTextures(game.app);
 
   // ステージデータ読み込み
-  const stageData = await AssetLoader.loadStage(`${import.meta.env.BASE_URL}src/assets/levels/stage1.json`);
+  const stageDataList = await Promise.all([
+    AssetLoader.loadStage(`${import.meta.env.BASE_URL}src/assets/levels/stage1.json`),
+    AssetLoader.loadStage(`${import.meta.env.BASE_URL}src/assets/levels/stage2.json`),
+  ]);
+  let currentStageIndex = 0;
 
   // --- タイトル画面 ---
   const titleScene = new TitleScene();
@@ -41,7 +45,7 @@ async function main() {
   input.bind();
 
   // レベル管理
-  const levelManager = new LevelManager(stageData, game.gameContainer);
+  const levelManager = new LevelManager(stageDataList[0], game.gameContainer);
 
   // エフェクト管理
   const effectManager = new EffectManager(game.gameContainer);
@@ -68,26 +72,71 @@ async function main() {
     AudioManager.current.playSE("explosion");
     game.shake(20, 1.0);
 
-    // 少し待ってからクリア画面
-    setTimeout(() => {
-      game.state = "gameclear";
-      gameUI.showGameClear();
-    }, 500);
+    if (currentStageIndex < stageDataList.length - 1) {
+      // 次のステージへ遷移（HP引き継ぎ）
+      setTimeout(() => {
+        currentStageIndex++;
+        player.clearBullets();
+        levelManager.loadStage(stageDataList[currentStageIndex]);
+        effectManager.reset();
+      }, 1500);
+    } else {
+      // 最終ステージクリア
+      setTimeout(() => {
+        game.state = "gameclear";
+        gameUI.showGameClear();
+      }, 500);
+    }
   };
 
-  // リトライ処理
+  // リトライ処理（HP完全リセット、ステージ1から再開）
   const resetGame = () => {
+    currentStageIndex = 0;
     player.clearBullets();
     player.reset();
-    levelManager.reset();
+    levelManager.loadStage(stageDataList[0]);
     effectManager.reset();
     gameUI.resetScore();
     gameUI.hideGameOver();
     gameUI.hideBossBar();
     gameUI.updateHP(player.hp);
+    gameUI.updateBombs(player.bombs);
     game.state = "playing";
   };
   gameUI.setOnRetry(resetGame);
+
+  // ボム発動処理
+  const activateBomb = () => {
+    if (game.state !== "playing") return;
+    if (!player.useBomb()) return;
+
+    // 通常敵を全滅（ボス以外）
+    for (const enemy of levelManager.activeEnemies) {
+      if (!enemy.active || enemy === levelManager.boss) continue;
+      gameUI.addScore(enemy.score);
+      effectManager.spawnExplosion(enemy.x, enemy.y, 0xff4400);
+      enemy.deactivate();
+    }
+
+    // ボスに10ダメージ
+    if (levelManager.boss) {
+      levelManager.boss.takeDamage(10);
+    }
+
+    // 演出
+    gameUI.showBombFlash();
+    effectManager.spawnBombExplosions();
+    AudioManager.current.playSE("explosion");
+    game.shake(15, 0.8);
+
+    gameUI.updateBombs(player.bombs);
+  };
+  gameUI.setOnBomb(activateBomb);
+
+  // キーボード 'Z' でボム発動
+  window.addEventListener("keydown", (e) => {
+    if (e.code === "KeyZ") activateBomb();
+  });
 
   // タイトル → ゲーム開始
   titleScene.setOnStart(() => {
@@ -106,6 +155,8 @@ async function main() {
 
     // シェイク更新
     game.updateShake(delta);
+
+    gameUI.update(delta);
 
     if (game.state !== "playing") {
       effectManager.update(delta);

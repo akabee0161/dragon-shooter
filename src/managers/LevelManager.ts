@@ -99,6 +99,16 @@ export class LevelManager {
     );
   }
 
+  /** ステージデータを切り替えてリセットする */
+  loadStage(stageData: StageData): void {
+    this.stageData = stageData;
+    this.stageData.waves.sort((a, b) => a.time - b.time);
+    this.reset();
+    console.log(
+      `[LevelManager] Stage "${stageData.id}" loaded — ${stageData.waves.length} waves`,
+    );
+  }
+
   /** 全ての敵をプールに返却し、タイマーをリセット */
   reset(): void {
     for (const enemy of this.activeEnemies) {
