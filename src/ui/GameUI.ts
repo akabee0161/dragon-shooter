@@ -3,6 +3,7 @@ import { Game } from "../core/Game";
 import { Player } from "../entities/Player";
 
 export class GameUI {
+  private stage: Container;
   private scoreText: Text;
   private hpText: Text;
   private score = 0;
@@ -27,6 +28,8 @@ export class GameUI {
   private bossBarWidth = 0;
 
   constructor(stage: Container) {
+    this.stage = stage;
+
     // スコア表示（左上）
     this.scoreText = new Text({
       text: "SCORE: 0",
@@ -63,7 +66,7 @@ export class GameUI {
         },
       },
     });
-    this.hpText.anchor.set(0, 1);
+    this.hpText.anchor.set(1, 0);
     stage.addChild(this.hpText);
 
     // Boss HP Bar（非表示で初期化）
@@ -82,14 +85,13 @@ export class GameUI {
 
     // ボムボタン（右下、セーフエリアを考慮）
     const game = Game.current;
-    const btnW = 120;
-    const btnH = 50;
-    const btnX = game.width - btnW - 15;
-    const btnY = game.height - btnH - 55;
+    const btnR = 28;
+    const btnCX = game.width - btnR - 15;
+    const btnCY = game.height - btnR - 55;
 
     this.bombBtn = new Graphics();
-    this.bombBtn.roundRect(btnX, btnY, btnW, btnH, 10).fill(0xff4400);
-    this.bombBtn.roundRect(btnX, btnY, btnW, btnH, 10).stroke({ color: 0xff8800, width: 2 });
+    this.bombBtn.circle(btnCX, btnCY, btnR).fill(0xff4400);
+    this.bombBtn.circle(btnCX, btnCY, btnR).stroke({ color: 0xff8800, width: 2 });
     this.bombBtn.eventMode = "static";
     this.bombBtn.cursor = "pointer";
     this.bombBtn.on("pointerdown", () => {
@@ -98,10 +100,10 @@ export class GameUI {
     stage.addChild(this.bombBtn);
 
     this.bombBtnText = new Text({
-      text: `BOMB ×${Player.MAX_BOMBS}`,
+      text: `${Player.MAX_BOMBS}`,
       style: {
         fontFamily: "monospace",
-        fontSize: 18,
+        fontSize: 22,
         fill: 0xffffff,
         fontWeight: "bold",
         dropShadow: {
@@ -114,8 +116,8 @@ export class GameUI {
       },
     });
     this.bombBtnText.anchor.set(0.5);
-    this.bombBtnText.x = btnX + btnW / 2;
-    this.bombBtnText.y = btnY + btnH / 2;
+    this.bombBtnText.x = btnCX;
+    this.bombBtnText.y = btnCY;
     stage.addChild(this.bombBtnText);
 
     // ボム赤フラッシュ（最前面）
@@ -134,8 +136,8 @@ export class GameUI {
     const hearts = "\u2764 ".repeat(hp).trim();
     this.hpText.text = hearts || "---";
     const game = Game.current;
-    this.hpText.x = 15;
-    this.hpText.y = game.height - 55;
+    this.hpText.x = game.width - 15;
+    this.hpText.y = 10;
   }
 
   get currentScore(): number {
@@ -154,7 +156,7 @@ export class GameUI {
 
   /** ボム残数を更新 */
   updateBombs(count: number): void {
-    this.bombBtnText.text = `BOMB ×${count}`;
+    this.bombBtnText.text = `${count}`;
     if (count <= 0) {
       this.bombBtn.tint = 0x888888;
     } else {

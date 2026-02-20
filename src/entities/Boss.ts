@@ -8,7 +8,7 @@ import { Game } from "../core/Game";
  * ボスエネミー。高HP、大きいサイズ、敵弾を発射する。
  */
 export class Boss extends Enemy {
-  static readonly MAX_HP = 50;
+  static readonly MAX_HP = 100;
 
   /** 発射間隔（秒）— EnemyFactoryから設定可能 */
   fireCooldown = 1.0;

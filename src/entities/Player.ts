@@ -13,7 +13,7 @@ export class Player extends Entity {
   bombs = Player.MAX_BOMBS;
 
   /** 発射間隔（秒） */
-  private fireCooldown = 0.2;
+  private fireCooldown = 0.1;
   private fireTimer = 0;
 
   /** 無敵状態 */
@@ -37,7 +37,7 @@ export class Player extends Entity {
       (b) => {
         b.speedY = -1.0;
       },
-      20,
+      40,
     );
   }
 
@@ -144,6 +144,5 @@ export class Player extends Entity {
     bullet.active = true;
     bullet.addToStage(this.container);
     this.bullets.push(bullet);
-    AudioManager.current.playSE("shot");
   }
 }

@@ -14,13 +14,13 @@ interface EnemyDef {
 }
 
 const DEFS: Record<string, EnemyDef> = {
-  enemy_red: { textureKey: TEX.ENEMY_RED, hp: 1, radius: 0.02, score: 100 },
-  enemy_green: { textureKey: TEX.ENEMY_GREEN, hp: 2, radius: 0.025, score: 200 },
-  enemy_blue: { textureKey: TEX.ENEMY_BLUE, hp: 3, radius: 0.022, score: 300 },
-  enemy_purple: { textureKey: TEX.ENEMY_PURPLE, hp: 2, radius: 0.018, score: 250 },
+  enemy_red: { textureKey: TEX.ENEMY_RED, hp: 2, radius: 0.02, score: 100 },
+  enemy_green: { textureKey: TEX.ENEMY_GREEN, hp: 4, radius: 0.025, score: 200 },
+  enemy_blue: { textureKey: TEX.ENEMY_BLUE, hp: 6, radius: 0.022, score: 300 },
+  enemy_purple: { textureKey: TEX.ENEMY_PURPLE, hp: 4, radius: 0.018, score: 250 },
   boss: { textureKey: TEX.BOSS, hp: Boss.MAX_HP, radius: 0.06, score: 3000 },
-  boss_stage2: { textureKey: TEX.BOSS_STAGE2, hp: 80, radius: 0.06, score: 5000 },
-  boss_stage3: { textureKey: TEX.BOSS_STAGE3, hp: 120, radius: 0.06, score: 8000 },
+  boss_stage2: { textureKey: TEX.BOSS_STAGE2, hp: 160, radius: 0.06, score: 5000 },
+  boss_stage3: { textureKey: TEX.BOSS_STAGE3, hp: 240, radius: 0.06, score: 8000 },
 };
 
 /** ボスタイプごとの攻撃パラメータ */
