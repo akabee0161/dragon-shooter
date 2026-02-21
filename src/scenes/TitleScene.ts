@@ -6,7 +6,7 @@ import { AudioManager } from "../managers/AudioManager";
 export class TitleScene {
   readonly container: Container;
   private bg: TilingSprite;
-  private onStart: (() => void) | null = null;
+  private onStart: ((difficulty: "easy" | "normal") => void) | null = null;
 
   constructor() {
     this.container = new Container();
@@ -44,40 +44,76 @@ export class TitleScene {
     title.y = game.height * 0.3;
     this.container.addChild(title);
 
-    // TAP TO START (点滅させるのでインスタンス保持)
-    const tapText = new Text({
-      text: "TAP TO START",
-      style: {
-        fontFamily: "monospace",
-        fontSize: 28,
-        fill: 0xffffff,
-      },
-    });
-    tapText.anchor.set(0.5);
-    tapText.x = game.width / 2;
-    tapText.y = game.height * 0.6;
-    this.container.addChild(tapText);
+    // NORMAL ボタン
+    this.addButton(
+      "NORMAL",
+      0x2266cc,
+      0x4488ff,
+      game.height * 0.57,
+      () => this.handleStart("normal"),
+    );
 
-    // 点滅アニメーション
-    let elapsed = 0;
+    // EASY ボタン
+    this.addButton(
+      "EASY",
+      0x226622,
+      0x44cc44,
+      game.height * 0.71,
+      () => this.handleStart("easy"),
+    );
+
+    // 背景スクロールアニメーション
     game.app.ticker.add((ticker) => {
       if (!this.container.visible) return;
       const delta = ticker.deltaTime / 60;
-      elapsed += delta;
-      tapText.alpha = 0.5 + Math.sin(elapsed * 4) * 0.5;
       this.bg.tilePosition.y += 30 * delta;
     });
-
-    // タップで開始
-    const hitArea = new Graphics();
-    hitArea.rect(0, 0, game.width, game.height).fill({ color: 0x000000, alpha: 0.01 });
-    hitArea.eventMode = "static";
-    hitArea.cursor = "pointer";
-    hitArea.on("pointerdown", () => this.handleStart());
-    this.container.addChild(hitArea);
   }
 
-  setOnStart(callback: () => void): void {
+  private addButton(
+    label: string,
+    fillColor: number,
+    strokeColor: number,
+    centerY: number,
+    onClick: () => void,
+  ): void {
+    const game = Game.current;
+    const btnW = 180;
+    const btnH = 52;
+    const btnX = game.width / 2 - btnW / 2;
+    const btnY = centerY - btnH / 2;
+
+    const btn = new Graphics();
+    btn.roundRect(btnX, btnY, btnW, btnH, 10).fill(fillColor);
+    btn.roundRect(btnX, btnY, btnW, btnH, 10).stroke({ color: strokeColor, width: 2 });
+    btn.eventMode = "static";
+    btn.cursor = "pointer";
+    btn.on("pointerdown", onClick);
+    this.container.addChild(btn);
+
+    const text = new Text({
+      text: label,
+      style: {
+        fontFamily: "monospace",
+        fontSize: 26,
+        fill: 0xffffff,
+        fontWeight: "bold",
+        dropShadow: {
+          alpha: 0.8,
+          angle: Math.PI / 4,
+          blur: 2,
+          distance: 2,
+          color: 0x000000,
+        },
+      },
+    });
+    text.anchor.set(0.5);
+    text.x = game.width / 2;
+    text.y = centerY;
+    this.container.addChild(text);
+  }
+
+  setOnStart(callback: (difficulty: "easy" | "normal") => void): void {
     this.onStart = callback;
   }
 
@@ -89,9 +125,9 @@ export class TitleScene {
     this.container.visible = false;
   }
 
-  private handleStart(): void {
+  private handleStart(difficulty: "easy" | "normal"): void {
     AudioManager.current.init();
     AudioManager.current.playBGM();
-    if (this.onStart) this.onStart();
+    if (this.onStart) this.onStart(difficulty);
   }
 }

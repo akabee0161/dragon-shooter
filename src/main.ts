@@ -158,7 +158,8 @@ async function main() {
   });
 
   // タイトル → ゲーム開始（常にステージ1から）
-  titleScene.setOnStart(() => {
+  titleScene.setOnStart((difficulty) => {
+    game.difficulty = difficulty;
     titleScene.hide();
     game.gameContainer.visible = true;
     gameUI.setVisible(true);

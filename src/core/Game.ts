@@ -11,6 +11,7 @@ export class Game {
   height = 0;
 
   state: GameState = "playing";
+  difficulty: "easy" | "normal" = "normal";
 
   /** Screen Shake */
   private shakeIntensity = 0;

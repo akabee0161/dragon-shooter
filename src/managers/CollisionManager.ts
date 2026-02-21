@@ -63,7 +63,8 @@ export class CollisionManager {
         if (dist < bullet.radius + enemy.radius) {
           bullet.deactivate();
           const wasAlive = enemy.hp > 0;
-          enemy.takeDamage(1);
+          const dmg = Game.current.difficulty === "easy" ? 2 : 1;
+          enemy.takeDamage(dmg);
 
           if (wasAlive && enemy.hp <= 0) {
             kills.push({
