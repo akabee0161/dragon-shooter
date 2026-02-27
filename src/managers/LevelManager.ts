@@ -224,6 +224,7 @@ export class LevelManager {
 
     const enemy = this.enemyPool.acquire();
     EnemyFactory.create(enemy, wave.type, wave.x, wave.y, wave.speed);
+    enemy.drop = wave.drop ?? false;
     enemy.addToStage(this.container);
     this.activeEnemies.push(enemy);
 
@@ -235,6 +236,7 @@ export class LevelManager {
   private spawnShooter(wave: WaveEntry): void {
     const shooter = new ShooterEnemy(this.container);
     EnemyFactory.create(shooter, wave.type, wave.x, wave.y, wave.speed);
+    shooter.drop = wave.drop ?? false;
     shooter.addToStage(this.container);
     this.activeEnemies.push(shooter);
     this.shooterEnemies.push(shooter);
@@ -247,6 +249,7 @@ export class LevelManager {
   private spawnCharger(wave: WaveEntry): void {
     const charger = new ChargerEnemy();
     EnemyFactory.create(charger, wave.type, wave.x, wave.y, wave.speed);
+    charger.drop = wave.drop ?? false;
     charger.addToStage(this.container);
     this.activeEnemies.push(charger);
     this.chargerEnemies.push(charger);

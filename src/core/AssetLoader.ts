@@ -11,6 +11,7 @@ export interface WaveEntry {
   x: number;
   y: number;
   speed: number;
+  drop?: boolean;
 }
 
 /** テクスチャキー */
@@ -26,6 +27,7 @@ export const TEX = {
   BOSS_STAGE2: "boss_stage2",
   BOSS_STAGE3: "boss_stage3",
   BG: "bg",
+  POWER_UP: "power_up",
 } as const;
 
 /** 生成済みテクスチャキャッシュ */
@@ -167,6 +169,13 @@ export class AssetLoader {
     boss3.circle(60, 35, 6).fill(0x00ffff);
     boss3.circle(60, 36, 3).fill(0x004444);
     AssetLoader.cacheFromGraphics(app, TEX.BOSS_STAGE3, boss3, 96, 96);
+
+    // パワーアップアイテム 32x32 (金色オーブ)
+    const powerUpG = new Graphics();
+    powerUpG.circle(16, 16, 14).fill(0xffdd00);
+    powerUpG.circle(16, 16, 9).fill(0xffff88);
+    powerUpG.circle(16, 16, 4).fill(0xffffff);
+    AssetLoader.cacheFromGraphics(app, TEX.POWER_UP, powerUpG, 32, 32);
 
     // 背景タイル 64x128 (星空)
     const bg = new Graphics();

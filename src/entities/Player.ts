@@ -11,6 +11,8 @@ export class Player extends Entity {
 
   hp = Player.MAX_HP;
   bombs = Player.MAX_BOMBS;
+  /** 発射方向数（パワーアップで増加） */
+  fireWays = 1;
 
   /** 発射間隔（秒） */
   private fireCooldown = 0.1;
@@ -36,8 +38,9 @@ export class Player extends Entity {
       () => new Bullet(),
       (b) => {
         b.speedY = -1.0;
+        b.speedX = 0;
       },
-      40,
+      80,
     );
   }
 
@@ -71,10 +74,16 @@ export class Player extends Entity {
     return true;
   }
 
+  /** パワーアップ：発射方向数を増やす（上限5） */
+  powerUp(): void {
+    this.fireWays = Math.min(this.fireWays + 1, 5);
+  }
+
   /** ゲームリセット時に呼ぶ */
   reset(): void {
     this.hp = Player.MAX_HP;
     this.bombs = Player.MAX_BOMBS;
+    this.fireWays = 1;
     this.resetPosition();
   }
 
@@ -138,11 +147,22 @@ export class Player extends Entity {
   }
 
   private fire(): void {
-    const bullet = this.bulletPool.acquire();
-    bullet.x = this.x;
-    bullet.y = this.y - 0.03;
-    bullet.active = true;
-    bullet.addToStage(this.container);
-    this.bullets.push(bullet);
+    for (const offsetX of this.getSpreadOffsets()) {
+      const bullet = this.bulletPool.acquire();
+      bullet.x = this.x;
+      bullet.y = this.y - 0.03;
+      bullet.speedX = offsetX;
+      bullet.active = true;
+      bullet.addToStage(this.container);
+      this.bullets.push(bullet);
+    }
+  }
+
+  private getSpreadOffsets(): number[] {
+    if (this.fireWays === 2) return [-0.12, 0.12];
+    if (this.fireWays === 3) return [-0.2, 0, 0.2];
+    if (this.fireWays === 4) return [-0.3, -0.1, 0.1, 0.3];
+    if (this.fireWays >= 5) return [-0.3, -0.15, 0, 0.15, 0.3];
+    return [0];
   }
 }

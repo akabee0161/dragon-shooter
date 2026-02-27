@@ -2,6 +2,7 @@ import { Bullet } from "../entities/Bullet";
 import { Enemy } from "../entities/Enemy";
 import { EnemyBullet } from "../entities/EnemyBullet";
 import { Player } from "../entities/Player";
+import { PowerUp } from "../entities/PowerUp";
 import { Game } from "../core/Game";
 
 export interface EnemyKillEvent {
@@ -9,6 +10,7 @@ export interface EnemyKillEvent {
   y: number;
   score: number;
   color: number;
+  drop: boolean;
 }
 
 export interface PlayerHitEvent {
@@ -30,6 +32,7 @@ const ENEMY_COLORS: Record<string, number> = {
 export interface CollisionResult {
   kills: EnemyKillEvent[];
   playerHit: PlayerHitEvent | null;
+  itemPickedUp: boolean;
 }
 
 export class CollisionManager {
@@ -41,6 +44,7 @@ export class CollisionManager {
     enemies: Enemy[],
     player: Player,
     enemyBullets?: EnemyBullet[],
+    powerUps?: PowerUp[],
   ): CollisionResult {
     const kills: EnemyKillEvent[] = [];
     let playerHit: PlayerHitEvent | null = null;
@@ -72,6 +76,7 @@ export class CollisionManager {
               y: enemy.y,
               score: enemy.score,
               color: ENEMY_COLORS[enemy.type] ?? 0xffffff,
+              drop: enemy.drop,
             });
           }
           break;
@@ -97,6 +102,7 @@ export class CollisionManager {
               y: enemy.y,
               score: 0,
               color: ENEMY_COLORS[enemy.type] ?? 0xffffff,
+              drop: false,
             });
           }
 
@@ -125,6 +131,21 @@ export class CollisionManager {
       }
     }
 
-    return { kills, playerHit };
+    // 4. アイテム vs 自機
+    let itemPickedUp = false;
+    if (powerUps && player.active) {
+      for (const item of powerUps) {
+        if (!item.active) continue;
+        const dx = item.x - player.x;
+        const dy = (item.y - player.y) * aspect;
+        if (Math.sqrt(dx * dx + dy * dy) < item.radius + player.radius) {
+          item.deactivate();
+          itemPickedUp = true;
+          break;
+        }
+      }
+    }
+
+    return { kills, playerHit, itemPickedUp };
   }
 }

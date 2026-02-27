@@ -9,6 +9,7 @@ import { EffectManager } from "./managers/EffectManager";
 import { AudioManager } from "./managers/AudioManager";
 import { GameUI } from "./ui/GameUI";
 import { TitleScene } from "./scenes/TitleScene";
+import { PowerUp } from "./entities/PowerUp";
 
 /** ステージファイル一覧（順番に進行） */
 const STAGE_FILES = ["stage1.json", "stage2.json", "stage3.json"];
@@ -28,6 +29,9 @@ async function main() {
 
   // 現在のステージインデックス
   let currentStageIndex = 0;
+
+  // パワーアップアイテム
+  const powerUps: PowerUp[] = [];
 
   // ボスの最大HP（ステージごとに変わる）
   let currentBossMaxHP = 50;
@@ -96,6 +100,8 @@ async function main() {
         // プレイヤーの弾だけクリア、HPとボムとスコアは引き継ぐ
         player.clearBullets();
         effectManager.reset();
+        for (const p of powerUps) p.deactivate();
+        powerUps.length = 0;
         game.state = "playing";
         gameUI.showStageTitle(`STAGE ${nextStageIndex + 1}`);
       }, 1500);
@@ -113,6 +119,8 @@ async function main() {
     currentStageIndex = 0;
     player.clearBullets();
     player.reset();
+    for (const p of powerUps) p.deactivate();
+    powerUps.length = 0;
     levelManager.loadStage(stageData); // stage1に戻す
     effectManager.reset();
     gameUI.resetScore();
@@ -200,12 +208,22 @@ async function main() {
     // 全敵弾の収集（ボス＋シューター敵）
     const enemyBullets = levelManager.getAllEnemyBullets();
 
+    // パワーアップアイテムの更新
+    for (let i = powerUps.length - 1; i >= 0; i--) {
+      if (!powerUps[i].active) {
+        powerUps.splice(i, 1);
+        continue;
+      }
+      powerUps[i].update(delta);
+    }
+
     // 当たり判定
     const result = CollisionManager.check(
       player.bullets,
       levelManager.activeEnemies,
       player,
       enemyBullets.length > 0 ? enemyBullets : undefined,
+      powerUps,
     );
 
     // 敵撃破イベント
@@ -214,6 +232,21 @@ async function main() {
         gameUI.addScore(kill.score);
       }
       effectManager.spawnExplosion(kill.x, kill.y, kill.color);
+      AudioManager.current.playSE("explosion");
+
+      // アイテムドロップ
+      if (kill.drop) {
+        const powerUp = new PowerUp();
+        powerUp.x = kill.x;
+        powerUp.y = kill.y;
+        powerUp.addToStage(game.gameContainer);
+        powerUps.push(powerUp);
+      }
+    }
+
+    // アイテム取得
+    if (result.itemPickedUp) {
+      player.powerUp();
       AudioManager.current.playSE("explosion");
     }
 
