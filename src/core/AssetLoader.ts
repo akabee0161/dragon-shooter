@@ -11,7 +11,7 @@ export interface WaveEntry {
   x: number;
   y: number;
   speed: number;
-  drop?: boolean;
+  dropItem?: "fireup" | "bomb" | "1up" | "bulletup";
 }
 
 /** テクスチャキー */
@@ -28,6 +28,13 @@ export const TEX = {
   BOSS_STAGE3: "boss_stage3",
   BG: "bg",
   POWER_UP: "power_up",
+  ITEM_BOMB: "item_bomb",
+  ITEM_1UP: "item_1up",
+  ITEM_BULLETUP: "item_bulletup",
+  BULLET_BLUE: "bullet_blue",
+  BULLET_RED: "bullet_red",
+  ENEMY_HEAVY: "enemy_heavy",
+  BOSS_STAGE4: "boss_stage4",
 } as const;
 
 /** 生成済みテクスチャキャッシュ */
@@ -53,11 +60,23 @@ export class AssetLoader {
     player.circle(30, 23, 1.5).fill(0x111111);
     AssetLoader.cacheFromGraphics(app, TEX.PLAYER, player, 48, 48);
 
-    // 弾 8x20
+    // 弾(黄) 8x20
     const bullet = new Graphics();
     bullet.roundRect(1, 0, 6, 20, 3).fill(0xffff44);
     bullet.roundRect(2, 2, 4, 8, 2).fill(0xffffaa);
     AssetLoader.cacheFromGraphics(app, TEX.BULLET, bullet, 8, 20);
+
+    // 弾(青) 8x20
+    const bulletBlue = new Graphics();
+    bulletBlue.roundRect(1, 0, 6, 20, 3).fill(0x44aaff);
+    bulletBlue.roundRect(2, 2, 4, 8, 2).fill(0xaaddff);
+    AssetLoader.cacheFromGraphics(app, TEX.BULLET_BLUE, bulletBlue, 8, 20);
+
+    // 弾(赤) 8x20
+    const bulletRed = new Graphics();
+    bulletRed.roundRect(1, 0, 6, 20, 3).fill(0xff4444);
+    bulletRed.roundRect(2, 2, 4, 8, 2).fill(0xff9999);
+    AssetLoader.cacheFromGraphics(app, TEX.BULLET_RED, bulletRed, 8, 20);
 
     // 敵(赤) 32x32 逆三角形 + 目
     const red = new Graphics();
@@ -77,6 +96,16 @@ export class AssetLoader {
     green.circle(14, 17, 1.5).fill(0x002200);
     green.circle(26, 17, 1.5).fill(0x002200);
     AssetLoader.cacheFromGraphics(app, TEX.ENEMY_GREEN, green, 40, 40);
+
+    // 敵(重装) 168x168 六角形（大型高耐久）
+    const heavy = new Graphics();
+    heavy.poly([84, 6, 156, 48, 156, 120, 84, 162, 12, 120, 12, 48]).fill(0x556677);
+    heavy.poly([84, 24, 138, 60, 138, 108, 84, 144, 30, 108, 30, 60]).fill(0x334455);
+    heavy.circle(60, 72, 15).fill(0xff4444);
+    heavy.circle(108, 72, 15).fill(0xff4444);
+    heavy.circle(60, 75, 7.5).fill(0xffff00);
+    heavy.circle(108, 75, 7.5).fill(0xffff00);
+    AssetLoader.cacheFromGraphics(app, TEX.ENEMY_HEAVY, heavy, 168, 168);
 
     // 敵(青) 36x36 ダイヤモンド型 + 目（弾を撃つ敵）
     const blue = new Graphics();
@@ -170,12 +199,55 @@ export class AssetLoader {
     boss3.circle(60, 36, 3).fill(0x004444);
     AssetLoader.cacheFromGraphics(app, TEX.BOSS_STAGE3, boss3, 96, 96);
 
-    // パワーアップアイテム 32x32 (金色オーブ)
+    // ボス(ステージ4) 96x96 (銀色ドラゴン)
+    const boss4 = new Graphics();
+    // 体
+    boss4.poly([48, 4, 8, 80, 88, 80]).fill(0xaaaaaa);
+    // 翼（左）
+    boss4.poly([8, 50, -20, 70, 24, 60]).fill(0x888888);
+    // 翼（右）
+    boss4.poly([88, 50, 116, 70, 72, 60]).fill(0x888888);
+    // 腹部
+    boss4.poly([48, 20, 28, 75, 68, 75]).fill(0xcccccc);
+    // 角（左）
+    boss4.poly([30, 15, 20, -5, 38, 10]).fill(0xffffff);
+    // 角（右）
+    boss4.poly([66, 15, 76, -5, 58, 10]).fill(0xffffff);
+    // 目（左）
+    boss4.circle(36, 35, 6).fill(0x4466ff);
+    boss4.circle(36, 36, 3).fill(0xffffff);
+    // 目（右）
+    boss4.circle(60, 35, 6).fill(0x4466ff);
+    boss4.circle(60, 36, 3).fill(0xffffff);
+    AssetLoader.cacheFromGraphics(app, TEX.BOSS_STAGE4, boss4, 96, 96);
+
+    // パワーアップアイテム 32x32 (金色オーブ) - fireup
     const powerUpG = new Graphics();
     powerUpG.circle(16, 16, 14).fill(0xffdd00);
     powerUpG.circle(16, 16, 9).fill(0xffff88);
     powerUpG.circle(16, 16, 4).fill(0xffffff);
     AssetLoader.cacheFromGraphics(app, TEX.POWER_UP, powerUpG, 32, 32);
+
+    // ボム補充アイテム 32x32 (赤オーブ)
+    const itemBomb = new Graphics();
+    itemBomb.circle(16, 16, 14).fill(0xff3333);
+    itemBomb.circle(16, 16, 9).fill(0xff8888);
+    itemBomb.circle(16, 16, 4).fill(0xffffff);
+    AssetLoader.cacheFromGraphics(app, TEX.ITEM_BOMB, itemBomb, 32, 32);
+
+    // 1UPアイテム 32x32 (ピンクオーブ)
+    const item1up = new Graphics();
+    item1up.circle(16, 16, 14).fill(0xff44aa);
+    item1up.circle(16, 16, 9).fill(0xff88cc);
+    item1up.circle(16, 16, 4).fill(0xffffff);
+    AssetLoader.cacheFromGraphics(app, TEX.ITEM_1UP, item1up, 32, 32);
+
+    // 弾強化アイテム 32x32 (シアンオーブ)
+    const itemBulletup = new Graphics();
+    itemBulletup.circle(16, 16, 14).fill(0x00ddff);
+    itemBulletup.circle(16, 16, 9).fill(0x88eeff);
+    itemBulletup.circle(16, 16, 4).fill(0xffffff);
+    AssetLoader.cacheFromGraphics(app, TEX.ITEM_BULLETUP, itemBulletup, 32, 32);
 
     // 背景タイル 64x128 (星空)
     const bg = new Graphics();

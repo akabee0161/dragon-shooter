@@ -6,16 +6,20 @@ import { AssetLoader, TEX } from "../core/AssetLoader";
 import { AudioManager } from "../managers/AudioManager";
 
 export class Player extends Entity {
-  static readonly MAX_HP = 3;
-  static readonly MAX_BOMBS = 3;
+  static readonly MAX_HP = 5;
+  static readonly MAX_BOMBS = 5;
+  static readonly INITIAL_HP = 3;
+  static readonly INITIAL_BOMBS = 3;
 
-  hp = Player.MAX_HP;
-  bombs = Player.MAX_BOMBS;
+  hp = Player.INITIAL_HP;
+  bombs = Player.INITIAL_BOMBS;
   /** 発射方向数（パワーアップで増加） */
   fireWays = 1;
+  /** 弾レベル（0=黄, 1=青, 2=赤） */
+  bulletLevel: 0 | 1 | 2 = 0;
 
   /** 発射間隔（秒） */
-  private fireCooldown = 0.1;
+  private fireCooldown = 0.2;
   private fireTimer = 0;
 
   /** 無敵状態 */
@@ -79,11 +83,17 @@ export class Player extends Entity {
     this.fireWays = Math.min(this.fireWays + 1, 5);
   }
 
+  /** 弾強化：弾レベルを上げる（上限2） */
+  bulletUp(): void {
+    if (this.bulletLevel < 2) this.bulletLevel = (this.bulletLevel + 1) as 1 | 2;
+  }
+
   /** ゲームリセット時に呼ぶ */
   reset(): void {
-    this.hp = Player.MAX_HP;
-    this.bombs = Player.MAX_BOMBS;
+    this.hp = Player.INITIAL_HP;
+    this.bombs = Player.INITIAL_BOMBS;
     this.fireWays = 1;
+    this.bulletLevel = 0;
     this.resetPosition();
   }
 
@@ -152,6 +162,7 @@ export class Player extends Entity {
       bullet.x = this.x;
       bullet.y = this.y - 0.03;
       bullet.speedX = offsetX;
+      bullet.setLevel(this.bulletLevel);
       bullet.active = true;
       bullet.addToStage(this.container);
       this.bullets.push(bullet);

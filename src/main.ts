@@ -12,7 +12,7 @@ import { TitleScene } from "./scenes/TitleScene";
 import { PowerUp } from "./entities/PowerUp";
 
 /** ステージファイル一覧（順番に進行） */
-const STAGE_FILES = ["stage1.json", "stage2.json", "stage3.json"];
+const STAGE_FILES = ["stage1.json", "stage2.json", "stage3.json", "stage4.json"];
 
 async function main() {
   // ゲーム初期化
@@ -235,8 +235,8 @@ async function main() {
       AudioManager.current.playSE("explosion");
 
       // アイテムドロップ
-      if (kill.drop) {
-        const powerUp = new PowerUp();
+      if (kill.dropItem) {
+        const powerUp = new PowerUp(kill.dropItem);
         powerUp.x = kill.x;
         powerUp.y = kill.y;
         powerUp.addToStage(game.gameContainer);
@@ -245,8 +245,18 @@ async function main() {
     }
 
     // アイテム取得
-    if (result.itemPickedUp) {
-      player.powerUp();
+    if (result.pickedItem) {
+      if (result.pickedItem === "fireup") {
+        player.powerUp();
+      } else if (result.pickedItem === "bomb") {
+        player.bombs = Math.min(player.bombs + 1, Player.MAX_BOMBS);
+        gameUI.updateBombs(player.bombs);
+      } else if (result.pickedItem === "1up") {
+        player.hp = Math.min(player.hp + 1, Player.MAX_HP);
+        gameUI.updateHP(player.hp);
+      } else if (result.pickedItem === "bulletup") {
+        player.bulletUp();
+      }
       AudioManager.current.playSE("explosion");
     }
 

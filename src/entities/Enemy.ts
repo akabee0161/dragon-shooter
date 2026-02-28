@@ -10,8 +10,8 @@ export class Enemy extends Entity {
   hp = 1;
   /** 撃破時のスコア */
   score = 100;
-  /** 撃破時にアイテムを落とすか */
-  drop = false;
+  /** 撃破時に落とすアイテム種別 */
+  dropItem: "fireup" | "bomb" | "1up" | "bulletup" | null = null;
 
   /** WaveStrategy用：出現時のX座標を保持 */
   originX = 0;

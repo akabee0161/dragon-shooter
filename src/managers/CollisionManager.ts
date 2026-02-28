@@ -10,7 +10,7 @@ export interface EnemyKillEvent {
   y: number;
   score: number;
   color: number;
-  drop: boolean;
+  dropItem: "fireup" | "bomb" | "1up" | "bulletup" | null;
 }
 
 export interface PlayerHitEvent {
@@ -27,12 +27,13 @@ const ENEMY_COLORS: Record<string, number> = {
   boss: 0x8833cc,
   boss_stage2: 0xcc2222,
   boss_stage3: 0x22aa66,
+  boss_stage4: 0xaaaaaa,
 };
 
 export interface CollisionResult {
   kills: EnemyKillEvent[];
   playerHit: PlayerHitEvent | null;
-  itemPickedUp: boolean;
+  pickedItem: "fireup" | "bomb" | "1up" | "bulletup" | null;
 }
 
 export class CollisionManager {
@@ -67,7 +68,7 @@ export class CollisionManager {
         if (dist < bullet.radius + enemy.radius) {
           bullet.deactivate();
           const wasAlive = enemy.hp > 0;
-          const dmg = Game.current.difficulty === "easy" ? 2 : 1;
+          const dmg = bullet.damage * (Game.current.difficulty === "easy" ? 2 : 1);
           enemy.takeDamage(dmg);
 
           if (wasAlive && enemy.hp <= 0) {
@@ -76,7 +77,7 @@ export class CollisionManager {
               y: enemy.y,
               score: enemy.score,
               color: ENEMY_COLORS[enemy.type] ?? 0xffffff,
-              drop: enemy.drop,
+              dropItem: enemy.dropItem,
             });
           }
           break;
@@ -95,14 +96,14 @@ export class CollisionManager {
 
         if (dist < player.radius + enemy.radius) {
           // ボス以外は接触で破壊
-          if (enemy.type !== "boss") {
+          if (!enemy.type.startsWith("boss")) {
             enemy.takeDamage(enemy.hp);
             kills.push({
               x: enemy.x,
               y: enemy.y,
               score: 0,
               color: ENEMY_COLORS[enemy.type] ?? 0xffffff,
-              drop: false,
+              dropItem: null,
             });
           }
 
@@ -132,7 +133,7 @@ export class CollisionManager {
     }
 
     // 4. アイテム vs 自機
-    let itemPickedUp = false;
+    let pickedItem: "fireup" | "bomb" | "1up" | "bulletup" | null = null;
     if (powerUps && player.active) {
       for (const item of powerUps) {
         if (!item.active) continue;
@@ -140,12 +141,12 @@ export class CollisionManager {
         const dy = (item.y - player.y) * aspect;
         if (Math.sqrt(dx * dx + dy * dy) < item.radius + player.radius) {
           item.deactivate();
-          itemPickedUp = true;
+          pickedItem = item.type;
           break;
         }
       }
     }
 
-    return { kills, playerHit, itemPickedUp };
+    return { kills, playerHit, pickedItem };
   }
 }
