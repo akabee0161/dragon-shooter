@@ -5,6 +5,7 @@ import { StraightStrategy } from "../strategies/StraightStrategy";
 import { WaveStrategy } from "../strategies/WaveStrategy";
 import { BossStrategy } from "../strategies/BossStrategy";
 import { BossStage4Strategy } from "../strategies/BossStage4Strategy";
+import { BossStage5Strategy } from "../strategies/BossStage5Strategy";
 
 /** 敵タイプごとの定義 */
 interface EnemyDef {
@@ -20,10 +21,14 @@ const DEFS: Record<string, EnemyDef> = {
   enemy_blue: { textureKey: TEX.ENEMY_BLUE, hp: 6, radius: 0.022, score: 300 },
   enemy_purple: { textureKey: TEX.ENEMY_PURPLE, hp: 4, radius: 0.018, score: 250 },
   enemy_heavy: { textureKey: TEX.ENEMY_HEAVY, hp: 150, radius: 0.05, score: 1500 },
+  formation_charger: { textureKey: TEX.ENEMY_SWARM, hp: 3, radius: 0.018, score: 150 },
+  formation_charger_left: { textureKey: TEX.ENEMY_SWARM, hp: 3, radius: 0.018, score: 150 },
+  formation_charger_right: { textureKey: TEX.ENEMY_SWARM, hp: 3, radius: 0.018, score: 150 },
   boss: { textureKey: TEX.BOSS, hp: Boss.MAX_HP, radius: 0.06, score: 3000 },
   boss_stage2: { textureKey: TEX.BOSS_STAGE2, hp: 160, radius: 0.06, score: 5000 },
   boss_stage3: { textureKey: TEX.BOSS_STAGE3, hp: 240, radius: 0.06, score: 8000 },
   boss_stage4: { textureKey: TEX.BOSS_STAGE4, hp: 350, radius: 0.07, score: 12000 },
+  boss_stage5: { textureKey: TEX.BOSS_STAGE5, hp: 500, radius: 0.08, score: 20000 },
 };
 
 /** ボスタイプごとの攻撃パラメータ */
@@ -32,6 +37,7 @@ const BOSS_PARAMS: Record<string, { fireCooldown: number; fanWays: number }> = {
   boss_stage2: { fireCooldown: 1.0, fanWays: 3 },
   boss_stage3: { fireCooldown: 0.6, fanWays: 5 },
   boss_stage4: { fireCooldown: 0.5, fanWays: 7 },
+  boss_stage5: { fireCooldown: 0.4, fanWays: 9 },
 };
 
 export class EnemyFactory {
@@ -43,7 +49,9 @@ export class EnemyFactory {
     speed: number,
   ): void {
     let strategy;
-    if (type === "boss_stage4") {
+    if (type === "boss_stage5") {
+      strategy = new BossStage5Strategy();
+    } else if (type === "boss_stage4") {
       strategy = new BossStage4Strategy();
     } else if (type === "boss" || type === "boss_stage2" || type === "boss_stage3") {
       strategy = new BossStrategy();

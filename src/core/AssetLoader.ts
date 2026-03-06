@@ -35,6 +35,8 @@ export const TEX = {
   BULLET_RED: "bullet_red",
   ENEMY_HEAVY: "enemy_heavy",
   BOSS_STAGE4: "boss_stage4",
+  BOSS_STAGE5: "boss_stage5",
+  ENEMY_SWARM: "enemy_swarm",
 } as const;
 
 /** 生成済みテクスチャキャッシュ */
@@ -220,6 +222,48 @@ export class AssetLoader {
     boss4.circle(60, 35, 6).fill(0x4466ff);
     boss4.circle(60, 36, 3).fill(0xffffff);
     AssetLoader.cacheFromGraphics(app, TEX.BOSS_STAGE4, boss4, 96, 96);
+
+    // ボス(ステージ5) 128x128 (黄金ドラゴン - 大型)
+    const boss5 = new Graphics();
+    // 体（大型三角形）
+    boss5.poly([64, 6, 8, 108, 120, 108]).fill(0xffcc00);
+    // 翼（左）
+    boss5.poly([8, 65, -28, 95, 28, 80]).fill(0xddaa00);
+    // 翼（右）
+    boss5.poly([120, 65, 156, 95, 100, 80]).fill(0xddaa00);
+    // 腹部
+    boss5.poly([64, 28, 38, 100, 90, 100]).fill(0xffee88);
+    // 角（左）
+    boss5.poly([40, 22, 24, -8, 52, 16]).fill(0xffffff);
+    // 角（右）
+    boss5.poly([88, 22, 104, -8, 76, 16]).fill(0xffffff);
+    // 副角（左小）
+    boss5.poly([30, 30, 18, 10, 38, 24]).fill(0xeeeeee);
+    // 副角（右小）
+    boss5.poly([98, 30, 110, 10, 90, 24]).fill(0xeeeeee);
+    // 目（左）
+    boss5.circle(46, 50, 9).fill(0xff4400);
+    boss5.circle(46, 51, 4.5).fill(0xffff00);
+    boss5.circle(47, 51, 2).fill(0x000000);
+    // 目（右）
+    boss5.circle(82, 50, 9).fill(0xff4400);
+    boss5.circle(82, 51, 4.5).fill(0xffff00);
+    boss5.circle(83, 51, 2).fill(0x000000);
+    // 紋章（胸部の模様）
+    boss5.circle(64, 70, 8).fill(0xffaa00);
+    boss5.circle(64, 70, 4).fill(0xff6600);
+    boss5.circle(64, 70, 2).fill(0xffff00);
+    AssetLoader.cacheFromGraphics(app, TEX.BOSS_STAGE5, boss5, 128, 128);
+
+    // 敵(群れ) 30x30 炎色の矢印型（隊列突撃敵）
+    const swarm = new Graphics();
+    swarm.poly([15, 0, 0, 28, 8, 20, 15, 30, 22, 20, 30, 28]).fill(0xff8800);
+    swarm.poly([15, 4, 6, 24, 15, 26, 24, 24]).fill(0xffcc00);
+    swarm.circle(11, 14, 2.5).fill(0xffeecc);
+    swarm.circle(19, 14, 2.5).fill(0xffeecc);
+    swarm.circle(11, 15, 1.2).fill(0x220000);
+    swarm.circle(19, 15, 1.2).fill(0x220000);
+    AssetLoader.cacheFromGraphics(app, TEX.ENEMY_SWARM, swarm, 30, 30);
 
     // パワーアップアイテム 32x32 (金色オーブ) - fireup
     const powerUpG = new Graphics();

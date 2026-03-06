@@ -12,7 +12,7 @@ import { TitleScene } from "./scenes/TitleScene";
 import { PowerUp } from "./entities/PowerUp";
 
 /** ステージファイル一覧（順番に進行） */
-const STAGE_FILES = ["stage1.json", "stage2.json", "stage3.json", "stage4.json"];
+const STAGE_FILES = ["stage1.json", "stage2.json", "stage3.json", "stage4.json", "stage5.json"];
 
 async function main() {
   // ゲーム初期化

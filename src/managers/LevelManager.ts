@@ -5,6 +5,7 @@ import { Enemy } from "../entities/Enemy";
 import { Boss } from "../entities/Boss";
 import { ShooterEnemy } from "../entities/ShooterEnemy";
 import { ChargerEnemy } from "../entities/ChargerEnemy";
+import { FormationChargerEnemy } from "../entities/FormationChargerEnemy";
 import { EnemyBullet } from "../entities/EnemyBullet";
 import { EnemyFactory } from "../factories/EnemyFactory";
 
@@ -29,6 +30,9 @@ export class LevelManager {
 
   /** 体当たり敵のリスト */
   private chargerEnemies: ChargerEnemy[] = [];
+
+  /** 隊列突撃敵のリスト */
+  private formationChargerEnemies: FormationChargerEnemy[] = [];
 
   /** ボス出現コールバック */
   onBossSpawn: (() => void) | null = null;
@@ -87,7 +91,8 @@ export class LevelManager {
         !e.active &&
         e !== this.boss &&
         !(e instanceof ShooterEnemy) &&
-        !(e instanceof ChargerEnemy)
+        !(e instanceof ChargerEnemy) &&
+        !(e instanceof FormationChargerEnemy)
       ) {
         this.enemyPool.release(e);
         this.activeEnemies.splice(i, 1);
@@ -113,6 +118,16 @@ export class LevelManager {
         this.chargerEnemies.splice(i, 1);
       }
     }
+
+    // 非アクティブな隊列突撃敵を除去
+    for (let i = this.formationChargerEnemies.length - 1; i >= 0; i--) {
+      const fc = this.formationChargerEnemies[i];
+      if (!fc.active) {
+        const idx = this.activeEnemies.indexOf(fc);
+        if (idx >= 0) this.activeEnemies.splice(idx, 1);
+        this.formationChargerEnemies.splice(i, 1);
+      }
+    }
   }
 
   /** ボスの更新（main.tsから呼ぶ、プレイヤー座標を渡す） */
@@ -131,6 +146,12 @@ export class LevelManager {
     for (const charger of this.chargerEnemies) {
       if (!charger.active) continue;
       charger.setTarget(playerX, playerY);
+    }
+
+    // 隊列突撃敵にプレイヤー座標を渡す
+    for (const fc of this.formationChargerEnemies) {
+      if (!fc.active) continue;
+      fc.setTarget(playerX, playerY);
     }
   }
 
@@ -196,6 +217,9 @@ export class LevelManager {
     // チャージャー敵のクリーンアップ
     this.chargerEnemies.length = 0;
 
+    // 隊列突撃敵のクリーンアップ
+    this.formationChargerEnemies.length = 0;
+
     if (this.boss) {
       this.boss.clearBullets();
       this.boss.deactivate();
@@ -207,7 +231,7 @@ export class LevelManager {
   }
 
   private spawnEnemy(wave: WaveEntry): void {
-    if (wave.type === "boss" || wave.type === "boss_stage2" || wave.type === "boss_stage3" || wave.type === "boss_stage4") {
+    if (wave.type === "boss" || wave.type === "boss_stage2" || wave.type === "boss_stage3" || wave.type === "boss_stage4" || wave.type === "boss_stage5") {
       this.spawnBoss(wave);
       return;
     }
@@ -219,6 +243,11 @@ export class LevelManager {
 
     if (wave.type === "enemy_purple") {
       this.spawnCharger(wave);
+      return;
+    }
+
+    if (wave.type === "formation_charger" || wave.type === "formation_charger_left" || wave.type === "formation_charger_right") {
+      this.spawnFormation(wave, wave.type === "formation_charger_right");
       return;
     }
 
@@ -256,6 +285,29 @@ export class LevelManager {
 
     console.log(
       `[LevelManager] t=${this.elapsed.toFixed(2)}s — SPAWN CHARGER "${wave.type}" at (${wave.x}, ${wave.y})`,
+    );
+  }
+
+  /** 10体の隊列突撃敵を横一列に展開し、順番に突進させる */
+  private spawnFormation(wave: WaveEntry, fromRight = false): void {
+    const COUNT = 10;
+    const DELAY_INTERVAL = 0.45; // 体ごとの突進開始ディレイ（秒）
+
+    for (let i = 0; i < COUNT; i++) {
+      // x = 0.05 〜 0.95 の等間隔
+      const x = 0.05 + (i / (COUNT - 1)) * 0.9;
+      // fromRight=true のとき右端(i=9)のディレイ=0、左端ほど遅くなる
+      const delayIndex = fromRight ? (COUNT - 1 - i) : i;
+      const fc = new FormationChargerEnemy(delayIndex * DELAY_INTERVAL);
+      EnemyFactory.create(fc, "formation_charger", x, wave.y, wave.speed);
+      fc.addToStage(this.container);
+      this.activeEnemies.push(fc);
+      this.formationChargerEnemies.push(fc);
+    }
+
+    const dir = fromRight ? "right→left" : "left→right";
+    console.log(
+      `[LevelManager] t=${this.elapsed.toFixed(2)}s — FORMATION SPAWN (${COUNT} chargers, ${dir})`,
     );
   }
 
