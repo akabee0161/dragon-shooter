@@ -1,8 +1,9 @@
 import { defineConfig } from "vite";
 
 export default defineConfig({
-  base: "/labs/games/dragon-shooter/",
+  base: "/play/dragon-shooter/",
   build: {
-    outDir: "out",
+    outDir: "out/play/dragon-shooter",
+    emptyOutDir: true,
   },
 });

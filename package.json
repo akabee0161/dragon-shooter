@@ -2,6 +2,7 @@
   "name": "shooting-test",
   "version": "1.0.0",
   "type": "module",
+  "engines": { "node": ">=22" },
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
@@ -16,6 +17,7 @@
   },
   "devDependencies": {
     "typescript": "^5.9.3",
-    "vite": "^7.3.1"
+    "vite": "^7.3.1",
+    "wrangler": "^4.0.0"
   }
 }
