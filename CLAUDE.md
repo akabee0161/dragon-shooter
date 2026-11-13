@@ -156,3 +156,10 @@ boss                    ← Boss（updateBoss毎フレーム）
 - ステージ遷移時は HP・ボム・スコアを引き継ぎ、弾だけクリア
 - リトライ時はステージ1から完全リセット
 - ボスの難易度は `fireCooldown` と `fanWays` で制御
+
+## ブランチとプレビュー
+- 機能ブランチから `develop` への PR を最初に作る。`develop` にマージすると、Cloudflare Access の受付の後ろに確認用のプレビューが固定の URL に自動で上がる（`.github/workflows/preview.yml`）
+- 本番に出すときは、`develop` から `main` への PR をマージする（`deploy.yml` が本番に出す）
+- `preview.yml` は `develop` への push だけで動き、`wrangler deploy` は書かない。`wrangler.toml` の `preview_urls = true` は確認用プレビューのためで、本番の `workers.dev` は開かない
+- このリポジトリにはテストがないため、`preview.yml` は共通のひな形から `npm test` の 1 行だけを除いている（`deploy.yml` と同じ手順）
+- `develop` ができるまでの最初の PR（プレビューの導入そのもの）だけは `main` に向ける
